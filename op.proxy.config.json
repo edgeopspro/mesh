@@ -1,0 +1,21 @@
+{
+  "mesh": {
+    "op": {
+      "tags": [ "http", "proxy", "test" ]
+    },
+    "srv": "127.0.0.1:9886"
+  },
+  "services": {
+    "http": {
+      "base": "/mesh/ops",
+      
+      "timeout": 10
+    },
+    "tcp": {
+      "ports": [ 8880, 8890 ]
+    }
+  },
+  "use": {
+    "static": "bin/website"
+  }
+}
