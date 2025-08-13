@@ -38,7 +38,7 @@ def run(mids, proc, msg):
           key = keys[opid] if opid in keys else None
           if addr and key:
             ip, port = addr
-            result = decode(proc(ip, port, encode(data, key)), key)
+            result = proc(ip, port, encode(data, key))
             if isinstance(result, bytes):
-              data = result
+              data = decode(result, key)
   return data
