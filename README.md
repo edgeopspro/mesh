@@ -2,12 +2,6 @@
 
 A simplified & lightweight solution for managing and distributing computing tasks
 
-## Mesh Versions
-
-| Version | Branch | Details |
-|:---:|:---:|:----|
-| `v1a` | `@v/1a` / `main` | Bare version of mesh server for testing or extending without "fighting" the code base
-
 ## One Minute Setup
 
 Before you begin, ensure yo've got python 3 installed on your machine (if not, just click [here](https://www.python.org/downloads/), download and install it)
