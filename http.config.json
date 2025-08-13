@@ -5,7 +5,11 @@
       "database": "./mesh.db"
     },
     "http_srv": {
+      "host": "localhost",
       "port": 9886
+    },
+    "https_srv": {
+      "port": 9888
     },
     "tcp_socks": {
       "ports": [ 8860, 8869 ]

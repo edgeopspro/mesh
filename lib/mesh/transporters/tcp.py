@@ -13,7 +13,6 @@ def connect(handler, retries=10):
       handler(sock)
       ok = True
     except Exception as error:
-      print('xxxx', error)
       ok = False
       sleep(interval)
       interval += 1

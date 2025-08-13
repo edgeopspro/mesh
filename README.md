@@ -33,7 +33,27 @@ For the ones who actually trying to perform - if you got trouble downloading the
 
 ![download code](bin/readme/download.png)
 
-The real magic is  all the logs output you are going to get from this experiment... but - no way I'm sharing these screenshots - you need to test it to see it 🙃
+The real magic is all the log outputs you are going to get from this experiment... but - no way I'm sharing these screenshots - you need to test it to see it 🙃
+
+## Two Minutes Setup
+
+Survived the easy setup? Need something that is more production ready? Well.. you can set up a proxy and wire it all up yourself... or just use this quick setup instead
+
+* Go to [caddy](https://caddyserver.com/) download page by clicking [here](https://github.com/caddyserver/caddy/releases/tag/v2.10.0)
+* Download the `zip` / `tar` file that suits your machine (if you are using `arm`, or a specific `linux` distro - please use the download page and cherry-pick your binary file):
+  * [Windows OS](https://github.com/caddyserver/caddy/releases/download/v2.10.0/caddy_2.10.0_windows_amd64.zip)
+  * [Linux OS](https://github.com/caddyserver/caddy/releases/download/v2.10.0/caddy_2.10.0_linux_amd64.tar.gz)
+  * [Mac OS](https://github.com/caddyserver/caddy/releases/download/v2.10.0/caddy_2.10.0_mac_amd64.tar.gz)
+* Extract the `caddy` file into the `bin` folder in this project
+* Open a terminal windows and run `python http.srv.py` to run mesh server (this is the `http` service)
+* Open a new terminal window, then run `python https.proxy.py` to run `caddy` server as a reverse proxy
+* That's it! Now instead `http://localhost:9886` you may use `https://localhost:9888`
+
+Thecnical Notes: 
+* During the first setup `caddy` may request your permission to install a secured certificate. Allow this in order to activate the secured proxy
+* Using `caddy` is mainly for simplicity considerations - if other configuration / reverse proxy is a better suit for your needs, skip these steps and replace them with what works for you  
+
+![website screenshot](bin/readme/caddy.cert.png)
 
 ## Motivation
 

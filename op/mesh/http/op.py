@@ -23,7 +23,9 @@ def start(ctx):
       loads
     )
     if res['ok']:
-      opid = heads['MESH-OPID'] = res['payload']['opid']
+      payload = res['payload']
+      opid = heads['MESH-OPID'] = payload['opid']
+      secret = payload['secret']
       hooks['stop'] = lambda: http.fetch(
         {
           'path': 'stop',
@@ -35,7 +37,7 @@ def start(ctx):
       try:
         ctx.log(f'operator id by mesh server {opid}')
         tasks = [
-          tcp.rns(enc='ascii', handlers=[ write_http_in, write_http_out ])
+          tcp.rns(secret, enc='ascii', handlers=[ write_http_in, write_http_out ])
         ]
         for task in tasks:
           task.run()

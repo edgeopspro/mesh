@@ -5,7 +5,8 @@ def start(ctx, input, heads, req):
   port = input['port'] if 'port' in input else None
   tags = input['tags'] if 'tags' in input else None
   if port and tags:
-    return { 'opid': reg([req.client_address[0], port], tags) }
+    opid, key = reg([req.client_address[0], port], tags)
+    return { 'opid': opid, 'secret': key }
   raise Exception('invalid payload (both "port" and "tags" are required)')
 
 def stop(ctx, input, heads, req):

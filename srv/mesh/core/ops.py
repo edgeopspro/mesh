@@ -1,16 +1,22 @@
+from secrets import token_urlsafe
+
+from lib.mesh.security import encode, decode
 from lib.mesh.utils import uid, uuid
 
 addrs = {}
+keys = {}
 ops = {}
 
-def reg(addr, tags):
+def reg(addr, tags, key_size=32):
   opid = uuid()
+  key = token_urlsafe(key_size)
   addrs[opid] = addr
+  keys[opid] = key
   for tag in tags:
     if not tag in ops:
       ops[tag] = []
     ops[tag].append(opid)
-  return opid
+  return [ opid, key ]
 
 def unreg(opid):
   if opid in addrs:
@@ -28,8 +34,9 @@ def run(mids, proc, msg):
       for opid in ops[tag]:
         if not opid in use:
           use[opid] = True
-          addr = addrs[opid]
-          if addr:
+          addr = addrs[opid] if opid in addrs else None
+          key = keys[opid] if opid in keys else None
+          if addr and key:
             ip, port = addr
-            data = proc(ip, port, msg)
+            data = decode(proc(ip, port, encode(msg, key)), key)
   return data
