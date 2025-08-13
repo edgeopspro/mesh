@@ -1,0 +1,14 @@
+{
+  "debug": true,
+  "services": {
+    "http_store": {
+      "database": "./mesh.db"
+    },
+    "http_srv": {
+      "port": 9886
+    },
+    "tcp_socks": {
+      "ports": [ 8860, 8869 ]
+    }
+  }
+}
