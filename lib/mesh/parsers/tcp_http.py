@@ -25,35 +25,6 @@ def read_http_msg(msg):
     payload if payload else b'',
     loads(info.decode(header_encoding)) if info else {}
   ]
-  # payload, header, information = map(int, size.split(b'.'))
-  # start = 0
-  # stop = information
-  # info = body[start:stop]
-  # start = stop + 1
-  # stop += header + 1
-  # heads = body[start:stop]
-  # start = stop + 1
-  # stop += payload + 1
-  # data = body[start:stop]
-  # print(99999999, info, heads, data)
-  # return [
-  #   loads(heads.decode(header_encoding)) if heads else {},
-  #   data if data else b'',
-  #   loads(info.decode(header_encoding)) if info else {}
-  # ]
-
-# def write_http_mid(data):
-#   result, state = data
-#   if isinstance(result, list) and len(result) > 0:
-#     state['payload'] = result[0]
-#     if len(result) > 1 and isinstance(result[1], dict):
-#       state['heads'] = { **state['heads'], **result[1] }
-#   else:
-#     state['payload'] = result
-#   payload, heads = json_out(state['payload'], state['heads'], force=False)
-#   state['payload'] = payload
-#   state['heads'] = heads
-#   return state['payload']
   
 def write_http_msg(state):
   def pack(data, extra=[]):
@@ -66,7 +37,6 @@ def write_http_msg(state):
     else:
       return value
 
-  #heads = dumps(state['heads']) if 'heads' in state else {}
   heads = use('heads', None, {})
   payload = use('payload', None, b'')
   if 'info' in state:
@@ -81,12 +51,6 @@ def write_http_msg(state):
   elif isinstance(payload, str):
     payload = payload.encode(header_encoding)
   return msg(payload, [ pack(dumps(heads), [ pack(dumps(info)) ]) ])
-
-
-# def write_http_state(state):
-#   state['heads'] = {}
-#   state['payload'] = b''
-#   return state
 
 def read_http_in(state):
   return write_http_msg(state)

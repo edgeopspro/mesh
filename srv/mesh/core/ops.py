@@ -21,7 +21,7 @@ def unreg(opid):
       del opids[index]
 
 def run(mids, proc, msg):
-  data = b''
+  data = msg
   use = {}
   for tag in mids:
     if tag in ops:
@@ -31,5 +31,7 @@ def run(mids, proc, msg):
           addr = addrs[opid]
           if addr:
             ip, port = addr
-            data = proc(ip, port, msg)
+            result = proc(ip, port, data)
+            if isinstance(result, bytes):
+              data = result
   return data
