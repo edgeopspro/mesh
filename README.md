@@ -6,7 +6,8 @@ A simplified & lightweight solution for managing and distributing computing task
 
 | Version | Branch | Details |
 |:---:|:---:|:----|
-| `v1a` | `@v/1a` / `main` | Bare version of mesh server for testing or extending without "fighting" the code base
+| `v1a` | [@v/1a](https://github.com/edgeopspro/mesh/tree/%40v/1a) / [main](https://github.com/edgeopspro/mesh/tree/main) | Bare version of mesh server for testing or extending without "fighting" the code base |
+| `v1b` | [@v/1b](https://github.com/edgeopspro/mesh/tree/%40v/1b) | Security oriented patches and updates to make mesh production-ready |
 
 ## One Minute Setup
 
