@@ -2,6 +2,14 @@
 
 A simplified & lightweight solution for managing and distributing computing tasks
 
+## Version Highlights
+
+| Feature | Benefits |
+|:---|:---|
+| HTTPS proxy | Allows you to (also) expose your service to the network and run it securely |
+| Secured hand shake | When operator register in `mesh` server, it gets a fresh secret value to use for encryption |
+| TCP sockets encryption | Ensure that data passing in your network through sockets is properly encrypted (every operator uses a different encryption key) |
+
 ## One Minute Setup
 
 Before you begin, ensure yo've got python 3 installed on your machine (if not, just click [here](https://www.python.org/downloads/), download and install it)
