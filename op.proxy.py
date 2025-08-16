@@ -12,6 +12,10 @@ mimes = {
   'svg': 'image/svg+xml'
 }
 
+def live(ctx, key):
+  if key == 'heartbeat':
+    return "stayin' alive (proxy op)"
+
 def proc_http(ctx, state):
   ctx.log('process incoming http payload')
   payload, heads, info = state
@@ -49,7 +53,7 @@ def stop(ctx):
   # do some cleanup maybe
   
 http(
-  [ start, stop ],
+  [ start, live, stop ],
   [ proc_http, mid_raw_out ],
   'op.proxy.config.json'
 )

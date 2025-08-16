@@ -1,3 +1,4 @@
+from json import dumps
 from http.client import HTTPConnection
 from traceback import print_exc
 
@@ -60,4 +61,16 @@ def fetch(input, config={}):
     'heads': heads
   }
   return { **output, **{ 'ok': ok, 'payload': payload } }
-  
+
+
+def webhook(path, payload, host=None, heads={}):
+  if path and payload:
+    if not isinstance(heads, dict):
+      heads = {}
+    heads['Content-Type'] = 'application/json'
+    return fetch({
+      'method': 'POST',
+      'host': host if host else 'localhost',
+      'path': path,
+      'payload': dumps(payload)
+    })

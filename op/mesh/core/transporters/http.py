@@ -15,7 +15,10 @@ class HTTP():
       if callable(handler):
         payload = obj['payload'] if 'payload' in obj else None
         if payload:
-          obj['payload'] = handler(payload)
+          try:
+            obj['payload'] = handler(payload)
+          except Exception:
+            pass
 
     format(input, infmt)
     output = fetch({ **input, **self.use }, self.config)

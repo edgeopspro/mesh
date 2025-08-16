@@ -9,6 +9,7 @@ class Context(BasicContext):
   def __init__(self, config, router):
     super().__init__(config)
     self.cache = {}
+    self.data = {}
     self.router = parse(router, loads) if router else None
     self.reg('tcp_socks', lambda config: TCP(config['ports']))
 

@@ -2,6 +2,18 @@
 
 A simplified & lightweight solution for managing and distributing computing tasks
 
+## Version Highlights
+
+
+| Feature                  | Benefits                                                                       |
+| :------------------------- | :------------------------------------------------------------------------------- |
+| Live streaming           | stream useful periodic data from your operator to mesh server                  |
+| Collect data             | manage stream using special operators to handle data (dump to log / db / etc.) |
+| SSE (server-sent-events) | listen to live streaming using a modren web client                             |
+
+All details are in `Mesh Live - In Depth` section
+![server-sent-events screenshot](bin/readme/sse.screenshot.png)
+
 ## One Minute Setup
 
 Before you begin, ensure yo've got python 3 installed on your machine (if not, just click [here](https://www.python.org/downloads/), download and install it)
@@ -49,9 +61,10 @@ Survived the easy setup? Need something that is more production ready? Well.. yo
 * Open a new terminal window, then run `python https.proxy.py` to run `caddy` server as a reverse proxy
 * That's it! Now instead `http://localhost:9886` you may use `https://localhost:9888`
 
-Thecnical Notes: 
+Thecnical Notes:
+
 * During the first setup `caddy` may request your permission to install a secured certificate. Allow this in order to activate the secured proxy
-* Using `caddy` is mainly for simplicity considerations - if other configuration / reverse proxy is a better suit for your needs, skip these steps and replace them with what works for you  
+* Using `caddy` is mainly for simplicity considerations - if other configuration / reverse proxy is a better suit for your needs, skip these steps and replace them with what works for you
 
 ![website screenshot](bin/readme/caddy.cert.png)
 
@@ -80,6 +93,7 @@ Well... fun part is over. From here and on, it's only getting over detailed for 
 * Mesh Router - a configuration file that specify how the mesh server route traffic to operators (this mechanism heavily rely on tags)
 * Mesh Tags - use to identify operators while routing traffic from server (every operator can have multiple tags)
 * Mesh Transporter - a transport method to communicate between mesh operators and server
+* Mesh Live - a streaming mechanism design for operators `fnf`-ing mesh server (send messages without waiting for reply)
 
 ### Mesh Operator - In Depth
 
@@ -87,7 +101,7 @@ Every operator uses a single transport method in order to be activated and may u
 
 ```python
 http(                       # from "op.run.py" file - use the "http" transport method
-  [ start, stop ],          # hooks, used to communicate as part of the lifecycle of the operator
+  [ start, live, stop ],    # hooks, used to communicate as part of the lifecycle of the operator
   [                         # middlewares - a sequence of actions to be executed when this operator is requested
     mid_json_in,            # "json in" middleware - before processing the request itself, parse the payload to object (JSON format)
     proc_http,              # process the request
@@ -129,7 +143,7 @@ Let's take the `http.router.json` file as a reference:
     ],
     "/demo": [      <------  routing entry "demo" ("demo" is just a name - not a keyword, you can use any other names instead)
       [],           <------  pre process operators - none selected
-      [ "test" ],   <------  process operators - only one processor selected with tag "test"
+      [ "test" ],   <------  process operators - all processors with tag "test" will be used
       []            <------  post process operators - none selected
     ]
   }
@@ -150,14 +164,105 @@ Let's take the `http.router.json` file as a reference:
 }
 ```
 
-**The Full Story:** 
+**The Full Story:**
+
 * Create a different operator with the tag "proxy" - and the data will be send to both operators
 * This behavior is better be use in `pre` and `post` process operators (to avoid unexcpected behavior)
 * Also, `pre` and `post` process operators action mode is `fnf` (fire and forget), while process operator mode is `snr` (send and receive) - which is sequntial
 * The router accepts multiple processors for each entry for each type (`pre`, `proc` and `post`) - that's why arrays are used even for a single item or no items
 
+### Mesh Live - In Depth
+
+Before you begin, you can use the demo provided in this version:
+
+* Run each of the following commands in a separate terminal window:
+  * `python http.srv.py`
+  * `python op.log.py`
+  * `python op.simple.py`
+  * `python op.proxy.py`
+* Open a web browser and navigate to http://localhost:9886/log/stream and watch streaming in action
+* Relevant logs will also be present in the `op.log.py` terminal window
+
+Now, if you want to use the `live` mechanism with your `mesh` setup, Just embrace your core for:
+
+* Configure mesh server to use `live` mechanism
+* Setup a `live` mechanism in one operator (or more)
+* Setup a collector operator - for collecting the data
+* (Optional) - fetch all data using web clien (such as web browser)
+
+#### Configure mesh server
+
+Adding configuration to `mesh` server is easy! Just edit your server `router` configuration file and add the `live` entry, where:
+
+* `in` - all operators with these tags will be sending data to the live streaming
+* `out` - all operators that will collect data from stream (a collector may also send crucial data, such as heartbeat or other signals)
+
+```json
+{
+  "http": {
+   ...
+  },
+  "live": {
+    "in": [ "log", "test" ],
+    "out": [ "log" ]
+  }
+}
+```
+
+And... that's it! Your server is ready for some sweet sweet streaming!
+
+#### Setup a `live` mechanism
+
+First step is to add `stream` entry to your operator configuration file
+
+```json
+{
+  "mesh": {
+    "op": {
+      "tags": [ "my first op", "test" ],  <------  operator tags - used for routing via mesh server
+      "stream": {                         <------  stream option - tells the operator to use streams (this is where the magic happens)
+        "heartbeat": {                    <------  a demonstration for live mechanism ("heartbeat" is not a reserved keyword)
+          "interval": 5,                  <------  time (in seconds) between streams
+          "tags": [ "bip" ]               <------  streaming tags - these will appear in the stream payload and assist to filter and identify data
+        }
+      }
+    },
+    ...
+  },
+  ...
+```
+
+Then, you should add a `live` processor to your operator file:
+
+```python
+def live(ctx, key):
+  if key == 'heartbeat':                # the jey variable here matches the name of the stream configuration section (in out case "heartbeat")
+    return "stayin' alive (simple op)"  # reply with any payload you like (such as objects, lists, etc.)
+```
+
+#### Setup a collector
+
+At this point, data is send to `mesh` server but it is not processed. The final step is to guide our data to a collector operator - for processing it.
+
+```python
+def proc_live(ctx, state):
+  ctx.log('process incoming live message')  
+  ctx.log(state)                            # just log the data from live stream (or save it db or wahtever)
+
+# ...
+
+http(
+  [ start, live, stop ],
+  [
+    mid_json_in,                            # processing in this operator will be parsed as json
+    proc_live                               # then send to proc_live function for processing (no need to setup an output method, server is not accepting replys)
+  ],
+  'op.log.config.json'
+)
+```
+
 ## Final Thoughts
 
-So.. you manage to survive this `README` file... or you just scrolled down to see how the end looks like. Noice! 
+So.. you manage to survive this `README` file... or you just scrolled down to see how the end looks like. Noice!
 
 Anyhow - done something interesting with `mesh` or aving some thoughts / feedbacks? Send and email and share your experience with us 😎

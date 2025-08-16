@@ -1,4 +1,5 @@
 from random import randint
+from time import sleep
 
 from lib.mesh.security import encode, decode
 from lib.mesh.task import BackgroundTask
@@ -12,6 +13,22 @@ class TCP(BasicTCP):
     self.host = ctx.setup['srv'].split(':')[0] if 'srv' in ctx.setup else None
     self.port = randint(min, max - 1)
 
+
+  def live(self, stream, interval, listener, enc='utf-8', retries=2):
+    def handler(host, port, listener, enc, retries):
+      msg = listener()
+      send(host, [ 0, port ], msg, enc, retries)
+      
+    use = {
+      'host': self.host,
+      'port': stream,
+      'listener': listener,
+      'enc': enc,
+      'retries': retries
+    }
+    return BackgroundTask(handler, use, interval)
+
+
   def rns(self, secret, enc='utf-8', retries=10, buffer=1024, handlers={}):
     def handler(ctx, host, source, enc, retries, handlers):
       def invoke(handler, data):
@@ -19,7 +36,7 @@ class TCP(BasicTCP):
           return handler(data)
         return None
 
-      pre, post = handlers
+      pre, proc, post = handlers
       heads, payload = receive(source, retries, buffer)
       payload = decode(payload, secret)
       size, target, encoding = heads
@@ -27,8 +44,10 @@ class TCP(BasicTCP):
       result = None
       for mid in ctx.mids:
         state = mid(ctx, state)
-      msg = invoke(post, state)
-      send(host, [ 0, target ], encode(msg, secret), enc, retries)
+      state = invoke(proc, state)
+      if state:
+        msg = invoke(post, state)
+        send(host, [ 0, target ], encode(msg, secret), enc, retries)
 
     use = {
       'ctx': self.ctx,

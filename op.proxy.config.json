@@ -1,7 +1,13 @@
 {
   "mesh": {
     "op": {
-      "tags": [ "http", "proxy", "test" ]
+      "tags": [ "http", "proxy", "test" ],
+      "stream": {
+        "heartbeat": {
+          "interval": 5,
+          "tags": [ "bip" ]
+        }
+      }
     },
     "srv": "127.0.0.1:9886"
   },

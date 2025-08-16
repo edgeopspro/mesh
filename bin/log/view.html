@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      body {
+        font-family: 'Consolas', 'Menlo', 'Monaco', 'Lucida Console', monospace;
+        background: #181826;
+      }
+      body > div {
+        line-height: 2;
+        font-size: .9em;
+        color: #fefeff;
+      }
+
+      body > div:nth-child(odd) {
+        color: #009bff;
+      }
+    </style>
+    <script>
+      const events = new EventSource('http://localhost:9886/mesh/ops/live')
+
+      events.onmessage = (event) => {
+        const line = document.createElement('div')
+        line.textContent = event.data
+        document.body.appendChild(line)
+      }
+    </script>
+  </head>
+  <body></body>
+</html>

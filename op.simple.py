@@ -4,6 +4,10 @@ from time import time
 from lib.mesh.parsers.http import mid_json_in, mid_json_out
 from op.run import http
 
+def live(ctx, key):
+  if key == 'heartbeat':
+    return "stayin' alive (simple op)"
+
 def proc_http(ctx, state):
   ctx.log('process incoming http payload')
   payload, heads, info = state
@@ -28,7 +32,7 @@ def stop(ctx):
   # do some cleanup maybe
   
 http(
-  [ start, stop ],
+  [ start, live, stop ],
   [ 
     mid_json_in,
     proc_http,

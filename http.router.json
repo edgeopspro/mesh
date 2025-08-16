@@ -7,8 +7,17 @@
     ],
     "/demo": [
       [],
-      [ "test" ],
+      [ "my first op" ],
+      []
+    ],
+    "/log/stream": [
+      [],
+      [ "log" ],
       []
     ]
+  },
+  "live": {
+    "in": [ "log", "test" ],
+    "out": [ "log" ]
   }
 }

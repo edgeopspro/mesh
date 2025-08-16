@@ -5,10 +5,11 @@ class Task():
   def __init__(self, handler, args):
     self.thread = Thread(target=handler, args=args)
 
-  def run(self):
+  def run(self, wait=True):
     self.thread.start()
-    while self.thread.is_alive(): 
-      self.thread.join(1)
+    if wait:
+      while self.thread.is_alive(): 
+        self.thread.join(1)
     return self.thread
 
   def stop(self):
@@ -16,12 +17,24 @@ class Task():
       self.thread.join()
 
 
+
 class BackgroundTask(Task):
   def __init__(self, handler, args, interval=0):
-    def proc(handler, args, interval):
-      while True:
+    def proc(ctx, handler, args, interval):
+      while ctx.proc:
         handler(**args)
         if interval > 0:
           sleep(interval)
 
-    super().__init__(proc, (handler, args, interval))
+    super().__init__(proc, (self, handler, args, interval))
+    self.proc = False
+
+
+  def run(self, wait=True):
+    self.proc = True
+    super().run(wait)
+
+
+  def stop(self):
+    self.proc = False
+    super().stop()

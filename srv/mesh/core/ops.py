@@ -7,6 +7,12 @@ addrs = {}
 keys = {}
 ops = {}
 
+def parse(data, opid):
+  key = keys[opid] if opid in keys else None
+  if key:
+    return decode(data, key)
+  return None
+
 def reg(addr, tags, key_size=32):
   opid = uuid()
   key = token_urlsafe(key_size)
@@ -22,11 +28,14 @@ def unreg(opid):
   if opid in addrs:
     del addrs[opid]
   for tag, opids in ops.items():
-    index = opids.index(opid)
-    if index > -1:
-      del opids[index]
+    try:
+      index = opids.index(opid)
+      if index > -1:
+        del opids[index]
+    except Exception:
+      pass
 
-def run(mids, proc, msg):
+def run(mids, proc, msg, fmt=encode):
   data = msg
   use = {}
   for tag in mids:
@@ -38,7 +47,9 @@ def run(mids, proc, msg):
           key = keys[opid] if opid in keys else None
           if addr and key:
             ip, port = addr
-            result = proc(ip, port, encode(data, key))
+            result = proc(ip, port, fmt(data, key))
             if isinstance(result, bytes):
-              data = decode(result, key)
+              value = parse(result, opid)
+              if value:
+                data = value
   return data

@@ -1,10 +1,12 @@
+import sys
 from copy import deepcopy
 from json import dumps, loads
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from socketserver import TCPServer
 from traceback import print_exc
 
-from lib.mesh.parsers.http import http_res, http_router, json_in, json_out
+from lib.mesh.parsers.http import http_res, json_in, json_out
+from lib.mesh.parsers.router import http_router, stream_router
 from lib.mesh.parsers.tcp_http import read_http_in, read_http_out
 from lib.mesh.task import Task
 from lib.mesh.utils import uid
@@ -13,6 +15,8 @@ from srv.mesh.core.transporters.tcp import TCP
 from srv.mesh.http import api_ops
 
 context = None
+http = None
+live = None
 router = None
 tcp = None
 
@@ -66,7 +70,10 @@ class Server(BaseHTTPRequestHandler):
           output = route(context, json_in(input, force=True), heads, self)
           heads = {}
           payload, heads, info = http_res(output, heads, info)
-          payload, heads = json_out(payload, heads, force=False)
+          if 'status' in info:
+            status = info['status']
+          if status > 0:
+            payload, heads = json_out(payload, heads, force=False)
         else:
           tcp = context.services['tcp_socks']
           pre, proc, post = route
@@ -80,19 +87,20 @@ class Server(BaseHTTPRequestHandler):
           data = { 'req': data, 'res': { 'heads': heads, 'payload': output, 'status': status } }
           msg = read_http_in(data)
           ops.run(post, tcp.fnf, msg)
-        self.send_response(status)
-        for name, value in heads.items():
-          self.send_header(name, value)
-        if not isinstance(payload, bytes):
+        if status > 0:
+          self.send_response(status)
+          for name, value in heads.items():
+            self.send_header(name, value)
+          if not isinstance(payload, bytes):
+            if payload:
+              if not isinstance(payload, str):
+                payload = str(payload)
+              payload = bytearray(str(payload).encode('utf-8'))
           if payload:
-            if not isinstance(payload, str):
-              payload = str(payload)
-            payload = bytearray(str(payload).encode('utf-8'))
-        if payload:
-          self.send_header('Content-Length', len(payload))
-        self.end_headers()
-        if payload:
-          self.wfile.write(payload)
+            self.send_header('Content-Length', len(payload))
+          self.end_headers()
+          if payload:
+            self.wfile.write(payload)
         data['ok'] = True
     except Exception as error:
       status = 500
@@ -107,13 +115,7 @@ class Server(BaseHTTPRequestHandler):
 
 
 def start(ctx):
-  def load_srv(req, client_addr, srv):
-    thread = Thread(target=Server, name='http_handler', args=(req, client_addr, srv), daemon=True)
-    thread.start()
-    while thread.is_alive(): 
-      thread.join(1)
-
-  global context, router
+  global context, http, live, router, stream, tcp
   
   ctx.log('starting mesh http service')
   ctx.log('using config:')
@@ -125,10 +127,20 @@ def start(ctx):
   srv = ctx.reg('http_srv', lambda config: ThreadingHTTPServer(('', config['port']), Server))
   tcp = ctx.reg('tcp_socks', lambda config: TCP(config['ports']))
   api_ops.use(router)
+  live = tcp.stream.start(stream_router(ctx.router['live'] if 'live' in ctx.router else {}))
+  ctx.data['mesh_stream_port'] = tcp.stream.port if live else 0
   Task(srv.serve_forever, ()).run()
 
 
 def stop(ctx):
+  def http(service):
+    service.shutdown()
+    service.server_close()
+
   ctx.log('stopping mesh http service...')
-  ctx.use('http_srv', lambda service: service.shutdown())
+  ctx.use('http_srv', http)
+  if live:
+    live.stop()
   ctx.log('bye bye')
+  
+  

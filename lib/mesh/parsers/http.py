@@ -11,17 +11,6 @@ def http_res(result, heads = {}, info={}):
     payload = result
   return payload, heads, info
 
-def http_router(router):
-  postfix = '[\?|\/](.+)?'
-  routes = {}
-  for key, handler in router.items():
-    pattern = key.replace('/', '\/').replace('*', '.+')
-    routes[f'{pattern}{postfix}'] = [ key, handler ]
-  for key, entry in routes.items():
-    origin, handler = entry
-    router[key] = { 'origin': origin, 'use': handler }
-  return router
-
 def json_in(payload, force=False):
   try:
     return loads(payload)
@@ -38,9 +27,9 @@ def json_out(payload, heads={}, force=False):
         payload = None 
   return payload, heads
 
-def mid_json_in(ctx, state, force=True):
+def mid_json_in(ctx, state, force=True, parse=False):
   heads, payload, info = state
-  return [ json_in(payload, force), heads, info ]
+  return { 'heads': heads, 'info': info, 'payload': payload } if parse else [ json_in(payload, force), heads, info ]
 
 def mid_json_out(ctx, state, force=True):
   payload, heads, info = http_res(state)

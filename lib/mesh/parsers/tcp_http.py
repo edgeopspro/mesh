@@ -63,3 +63,6 @@ def write_http_in(msg):
 
 def write_http_out(state):
   return write_http_msg(state)
+
+def validate_http_state(state):
+  return state if state and 'payload' in state and state['payload'] else None

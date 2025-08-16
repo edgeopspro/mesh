@@ -15,7 +15,7 @@ def connect(handler, retries=10):
     except Exception as error:
       ok = False
       sleep(interval)
-      interval += 1
+      interval += .3
       retries -= 1
   return sock if ok else None
 
