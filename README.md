@@ -8,6 +8,7 @@ A simplified & lightweight solution for managing and distributing computing task
 |:---:|:---:|:----|
 | `v1a` | [@v/1a](https://github.com/edgeopspro/mesh/tree/%40v/1a) / [main](https://github.com/edgeopspro/mesh/tree/main) | Bare version of mesh server for testing or extending without "fighting" the code base |
 | `v1b` | [@v/1b](https://github.com/edgeopspro/mesh/tree/%40v/1b) | Security oriented patches and updates to make mesh production-ready |
+| `v1c` | [@v/1c](https://github.com/edgeopspro/mesh/tree/%40v/1c) | Using  `v/1b` security features while adding `live` mechanism for streaming across the mesh |
 
 ## One Minute Setup
 
