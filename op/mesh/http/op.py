@@ -44,14 +44,14 @@ def start(ctx):
         ]
         if stream:
           conf = ctx.conf([ 'mesh', 'op', 'stream' ])
-          ctx.stream = lambda interval, tags, value: tcp.live(stream, interval, lambda: write_json_stream(opid, value, tags, secret))
+          ctx.streamify(opid, stream, secret)
           if isinstance(conf, dict):
             for key, streamer in conf.items():
               if key:
                 interval = streamer['interval'] if 'interval' in streamer else None
                 tags = streamer['tags'] if 'tags' in streamer else None
                 if interval and tags:
-                  tasks.append(ctx.stream(interval, tags, ctx.trigger(1, key)))
+                  tasks.append(ctx.stream(tags, lambda: ctx.trigger(1, key), interval))
         main = tasks.pop(0)
         for task in tasks:
           task.run(wait=False)

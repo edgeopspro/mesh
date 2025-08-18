@@ -2,7 +2,7 @@ from random import randint
 from time import sleep
 
 from lib.mesh.security import encode, decode
-from lib.mesh.task import BackgroundTask
+from lib.mesh.task import BackgroundTask, Task
 from lib.mesh.transporters.tcp import connect, send, receive, BasicTCP
 
 class TCP(BasicTCP):
@@ -13,6 +13,12 @@ class TCP(BasicTCP):
     self.host = ctx.setup['srv'].split(':')[0] if 'srv' in ctx.setup else None
     self.port = randint(min, max - 1)
 
+  def event(self, stream, handler, enc='utf-8', retries=10):
+    def handler(host, port, handler, enc, retries):
+      msg = handler()
+      send(host, [ 0, port ], msg, enc, retries)
+
+    return Task(handler, ( self.host, stream, handler, enc, retries )).run()
 
   def live(self, stream, interval, listener, enc='utf-8', retries=2):
     def handler(host, port, listener, enc, retries):
