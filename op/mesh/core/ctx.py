@@ -11,6 +11,7 @@ class Context(BasicContext):
     self.setup = self.config['mesh'] if 'mesh' in self.config else {}
     self.reg('http', lambda config: HTTP(self, config))
     self.reg('tcp', lambda config: TCP(self, config))
+    self.stream = None
 
 
   def trigger(self, use, payload=None, handler=None):
