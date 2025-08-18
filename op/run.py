@@ -1,5 +1,3 @@
-from sys import argv
-
 from op.mesh.core.ctx import Context
 from op.mesh.http import op
 
