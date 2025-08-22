@@ -13,12 +13,12 @@ class TCP(BasicTCP):
     self.host = ctx.setup['srv'].split(':')[0] if 'srv' in ctx.setup else None
     self.port = randint(min, max - 1)
 
-  def event(self, stream, handler, enc='utf-8', retries=10):
-    def handler(host, port, handler, enc, retries):
-      msg = handler()
+  def event(self, stream, listener, enc='utf-8', retries=10):
+    def handler(host, port, listener, enc, retries):
+      msg = listener()
       send(host, [ 0, port ], msg, enc, retries)
 
-    return Task(handler, ( self.host, stream, handler, enc, retries )).run()
+    return Task(handler, ( self.host, stream, listener, enc, retries )).run()
 
   def live(self, stream, interval, listener, enc='utf-8', retries=2):
     def handler(host, port, listener, enc, retries):
