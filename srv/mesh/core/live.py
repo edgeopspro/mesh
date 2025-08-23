@@ -1,9 +1,9 @@
 from json import dumps
 
 from lib.mesh.task import BackgroundTask
-from lib.mesh.parsers.stream import mid_json_out, sign_json_payload
+from lib.mesh.parsers.stream import mid_json_out, sign_json_payload, read_json_stream
 from lib.mesh.parsers.tcp_http import read_http_out
-from lib.mesh.transporters.tcp import send, receive
+from lib.mesh.transporters import tcp
 from srv.mesh.core.ops import run
 
 encoding = 'utf-8'
@@ -16,7 +16,7 @@ class Streamer():
     self.task = None
 
   def send(self, host=None, port=None, payload=None):
-    send(
+    tcp.send(
       host if host else 'localhost',
       [ 0, port if port else self.port ],
       payload if payload else b'',
@@ -29,7 +29,11 @@ class Streamer():
       def register(ip, port, msg):
         heads, payload, info = read_http_out(msg)
         uuid, opid, ts = sign_json_payload(payload)
+        print('-----', msg, '***', payload)
         if uuid:
+          #data = None
+          #try:
+          #  data = read_json_stream()
           if not uuid in reg or len(payload) < len(reg[uuid][1]):
             reg[uuid] = [ msg, payload ]
 
@@ -42,7 +46,7 @@ class Streamer():
       reg = {}
       inputs, outputs = mids
       if inputs and outputs:
-        heads, payload = receive(port, retries, buffer)
+        heads, payload = tcp.receive(port, retries, buffer)
         run(inputs, register, payload, mid_json_out)
         stream()
 
