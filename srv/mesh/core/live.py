@@ -29,11 +29,7 @@ class Streamer():
       def register(ip, port, msg):
         heads, payload, info = read_http_out(msg)
         uuid, opid, ts = sign_json_payload(payload)
-        print('-----', msg, '***', payload)
         if uuid:
-          #data = None
-          #try:
-          #  data = read_json_stream()
           if not uuid in reg or len(payload) < len(reg[uuid][1]):
             reg[uuid] = [ msg, payload ]
 
