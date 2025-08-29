@@ -5,13 +5,15 @@ from lib.mesh.transporters.tcp import send, receive, BasicTCP
 from srv.mesh.core.live import Streamer
 
 class TCP(BasicTCP):
-  def __init__(self, ports):
+  def __init__(self, config):
     super().__init__()
+    ports = config['ports']
+    queue = config['queue'] if 'queue' in config else 1
     min, max = ports
     self.socks = {}
     for port in range(min, max + 1):
       self.socks[port] = False
-    self.stream = Streamer(self, self.use())
+    self.stream = Streamer(self, self.use(), queue)
 
 
   def snr(self, ip, port, msg, enc='utf-8', retries=10, buffer=1024):

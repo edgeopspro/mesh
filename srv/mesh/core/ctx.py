@@ -11,7 +11,7 @@ class Context(BasicContext):
     self.cache = {}
     self.data = {}
     self.router = parse(router, loads) if router else None
-    self.reg('tcp_socks', lambda config: TCP(config['ports']))
+    self.reg('tcp_socks', lambda config: TCP(config))
 
   def route(self, entry, kind):
     if kind in self.router:

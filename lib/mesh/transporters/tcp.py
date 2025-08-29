@@ -27,7 +27,7 @@ def send(ip, ports, data, enc, retries):
   sock.send(msg(data, [ source, enc ]))
   sock.close()
 
-def receive(port, retries, buffer):
+def receive(port, retries, buffer, queue=1):
   sock = connect(lambda sock: sock.bind(('', int(port))), retries)
   if not sock:
     raise Exception(f'unable to bind to local port {port}')
@@ -35,7 +35,7 @@ def receive(port, retries, buffer):
   heads = None
   init = True
   result = bytearray()
-  sock.listen(1)
+  sock.listen(queue)
   connection, info = sock.accept()
   data = True
   while data:

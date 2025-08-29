@@ -10,9 +10,10 @@ encoding = 'utf-8'
 subs = []
 
 class Streamer():
-  def __init__(self, ctx, port):
+  def __init__(self, ctx, port, queue=1):
     self.ctx = ctx
     self.port = port
+    self.queue = queue
     self.task = None
 
   def send(self, host=None, port=None, payload=None):
@@ -25,7 +26,7 @@ class Streamer():
     )
 
   def start(self, router, retries=2, buffer=1024):
-    def handler(ctx, mids, port, retries, buffer):
+    def handler(ctx, mids, port, retries, buffer, queue):
       def register(ip, port, msg):
         heads, payload, info = read_http_out(msg)
         uuid, opid, ts = sign_json_payload(payload)
@@ -42,7 +43,7 @@ class Streamer():
       reg = {}
       inputs, outputs = mids
       if inputs and outputs:
-        heads, payload = tcp.receive(port, retries, buffer)
+        heads, payload = tcp.receive(port, retries, buffer, queue)
         run(inputs, register, payload, mid_json_out)
         stream()
 
@@ -57,7 +58,8 @@ class Streamer():
         'mids': mids,
         'port': self.port,
         'retries': retries,
-        'buffer': buffer
+        'buffer': buffer,
+        'queue': self.queue
       }
       self.task = BackgroundTask(handler, use)
       self.task.run(wait=False)
