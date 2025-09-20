@@ -15,6 +15,7 @@ from srv.mesh.core.transporters.tcp import TCP
 from srv.mesh.http import api_ops
 
 context = None
+handshakehead = None
 http = None
 live = None
 router = None
@@ -24,6 +25,10 @@ class Server(BaseHTTPRequestHandler):
   def __init__(self, req, client_addr, srv):
     self.server_version = 'mesh.http.server/0.1'
     super().__init__(req, client_addr, srv)
+
+  def do_OPTIONS(self):
+    self.send_response(204) 
+    self.end_headers()
 
   def do_DELETE(self):
     self.proc('DELETE')
@@ -39,6 +44,18 @@ class Server(BaseHTTPRequestHandler):
 
   def do_PUT(self):
     self.proc('PUT')
+
+  def end_headers(self):
+    global context, handshakehead
+
+    if not handshakehead and context:
+      headers = context.conf([ 'services', 'http_srv', 'handshake', 'headers'])
+      if isinstance(headers, dict):
+        handshakehead = headers
+    if handshakehead:
+      for key, value in handshakehead.items():
+        self.send_header(key, str(value))
+    super().end_headers()
   
   def log_message(self, format, *args):
     return

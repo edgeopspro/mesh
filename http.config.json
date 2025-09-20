@@ -6,7 +6,12 @@
     },
     "http_srv": {
       "host": "localhost",
-      "port": 9886
+      "port": 9886,
+      "handshake": {
+        "headers": {
+          "Access-Control-Max-Age": 86400
+        }
+      }
     },
     "https_srv": {
       "port": 9888
